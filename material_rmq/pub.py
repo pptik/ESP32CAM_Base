@@ -1,6 +1,6 @@
 import pika
 
-credentials = pika.PlainCredentials('tmdgdai', 'tmdgdai')
+credentials = pika.PlainCredentials('***', '****')
 parameters = pika.ConnectionParameters('rmq1.pptik.id',5672, '/',credentials)
 connection = pika.BlockingConnection(parameters)
 channel = connection.channel()
