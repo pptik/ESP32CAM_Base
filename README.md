@@ -15,6 +15,7 @@ https://drive.google.com/file/d/1CLGPRt8_l0wwoNG6AWUamMlCOkm427ZJ/view . Ekstrak
 7. Jika memakai __downloader ttl CH340__, maka silahkan download terlebih dahulu driver ch340 : https://sparks.gogo.co.nz/ch340.html . Namun jika menggunakan ftdi ttl (merah) tidak perlu.
 8. Karena ESP32Cam tidak dilengkapi port untuk mendownload program, maka diperlukan usb ttl. Berikut wiring diagram dari usb ttl ke ESP32CAM untuk mendownload program. *ingat pin GPIO 0 harus disambungkan dengan GND agar bisa masuk mode flash.
 ![downloader](source_md/config.png)
+![config](source_md/config.jpeg)
 9. Pilih Board AI Thinker ESP32CAM pada modul Board Arduino IDE. Pilih Baudrate 115200 untuk Serial Monitor.
 10. Jika pada saat upload terkendala pada "connecting... to downloader" maka tekan tombol reset pada ESP32CAM,
 11. Jika sukses, maka lepas GPIO 0 yang sebelumnya menyambung dengan GND. Lalu masuk Serial Monitor.

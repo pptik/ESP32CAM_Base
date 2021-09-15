@@ -587,30 +587,7 @@ static esp_err_t index_handler(httpd_req_t *req){
     }
     return httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
 }
-extern int FTP_uploadImage(int64_t t, unsigned char * pdata, unsigned int size, String namefile);
-int end_name = 1;
-int capture_ftpupload(void)
-{
-    String nama = String(end_name);
-    camera_fb_t * fb = NULL;
-    esp_err_t res = ESP_OK;
-    int64_t fr_start = esp_timer_get_time();
 
-    fb = esp_camera_fb_get();
-    if (!fb) {
-        Serial.println("Camera capture failed");
-
-        return ESP_FAIL;
-    }
-    
-
-    FTP_uploadImage(fr_start, fb->buf, fb->len, nama);
-
-    esp_camera_fb_return(fb);
-    end_name += 1;
-
-    return res;
-}
 void startCameraServer(){
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 

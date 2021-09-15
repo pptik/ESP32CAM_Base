@@ -2,33 +2,38 @@
 #include <WiFi.h>
 #include <ESP32_FTPClient.h>
 #include <PubSubClient.h>
-#include <ArduinoJson.h>  
+// #include <ArduinoJson.h>  
+
 
 #define CAMERA_MODEL_AI_THINKER 
 #include "camera_pins.h"
+#define PushButton 14
+#define Hijau 16
+#define Merah 2
+#define LED 4
+
 
 // isi guid disini, guid baru bisa digenerate di guidgenerator.com atau situs guid generator lainnya. 
 const char* guid = "79680d3f-644d-4de1-b0bf-154e7669aa49";
 
-const char* ssid = "LSKK_Lantai2";
-const char* password = "lskk12345";
+const char* ssid = "ESP32CAM_3D";
+const char* password = "12345678";
 
-const char *TOPIC = "pkl_online";  // Topic to publish
-const char *TOPIC_Report = "report_pkl_online";  // Topic to subcribe 
-const char* mqtt_server = "rmq1.pptik.id"; 
-const char* mqtt_user = "/tmdgdai:tmdgdai";
-const char* mqtt_pass= "tmdgdai";
-const char* CL = guid;
+const char *TOPIC = "pkl_online";  // Topic to sub
+const char *TOPIC_Report = "report_pkl_online";  // Topic to pub
+const char* mqtt_server = "192.168.4.26"; 
+const char* mqtt_user = "/lana:lana";
+const char* mqtt_pass= "lana";
+const char* CL = "kamera_rizki";
 
-
-char ftp_server[] = "ftp5.pptik.id";
-char ftp_user[]   = "pkl_espcam";
-char ftp_pass[]   = "p3K4lespcam!";
+char ftp_server[] = "192.168.4.5";
+char ftp_user[]   = "iotdevice";
+char ftp_pass[]   = "1234567890";
 
 ESP32_FTPClient ftp (ftp_server,ftp_user,ftp_pass, 5000, 2);
 
 
-void startCameraServer();
+//void startCameraServer();
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -37,15 +42,50 @@ PubSubClient client(espClient);
 //IPAddress gateway(192, 168, 6, 1);
 //IPAddress subnet(255, 255, 255, 0);
 //IPAddress primaryDNS(8, 8, 8, 8);   //optional
+
+
 int FTP_uploadImage(int64_t t , unsigned char * pdata, unsigned int size, String namefile)
 {
   char filename[100] = "";
   String nama = namefile;
   Serial.print("FTP_uploadImage=");
   Serial.println(size);
-  char loc[100] = "/pkl_juli/";
-  int port = 2121;
+  char loc[100] = "/iotdevice/lana/test/test_cam";
+  int port = 21;
   ftp.OpenConnection(port);
+  bool check = ftp.isConnected();
+  Serial.print("cek koneksi: ");
+  Serial.println(check);
+  
+  if (check == 1){
+    digitalWrite(Merah, LOW);
+    delay (500);
+    digitalWrite(Merah, HIGH);
+    delay(500);
+    digitalWrite(Merah, LOW);
+    delay(500);
+    digitalWrite(Hijau, LOW);
+    delay(250);
+    digitalWrite(Hijau, HIGH);
+    delay(250);
+    }
+  else if (check == 0){
+    digitalWrite(Merah, LOW);
+    delay (500);
+    digitalWrite(Merah, HIGH);
+    delay(500);
+    digitalWrite(Merah, LOW);
+    delay(500);
+    digitalWrite(Merah, HIGH);
+    delay (500);
+    digitalWrite(Merah, LOW);
+    delay(500);
+    digitalWrite(Merah, HIGH);
+    delay(500);
+    digitalWrite(Merah, LOW);
+    delay (500);
+    }
+    
 
   sprintf(filename,"kamera_%s_%s.jpg",
     guid, nama
@@ -59,14 +99,17 @@ int FTP_uploadImage(int64_t t , unsigned char * pdata, unsigned int size, String
   ftp.CloseFile();
 
   ftp.CloseConnection();
-//  Serial.println("[INFO] Upload Image Success");
+  Serial.println("[INFO] Upload Image Success");
+
+  
   return 0;
 }
 extern int capture_ftpupload(void);
 
+
 void callback(char* topic, byte* payload, unsigned int length) {
   String response;
-
+  int Push_button_state = digitalRead(PushButton);
   for (int i = 0; i < length; i++) {
     response += (char)payload[i];
   }
@@ -75,11 +118,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println('\n'); 
   Serial.print("] ");
   Serial.println(response);
+  
   if(response == "on")  // Turn the light on
     {
       capture_ftpupload();
       Serial.println("[INFO] Sukses Upload FTP!");
-      
+      client.publish(TOPIC_Report, "Sudah Memotret");
+      Serial.println("Sudah Memotret");
     }
   else{
     Serial.println("[INFO] False Command!");
@@ -113,7 +158,23 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
+  
+  pinMode(PushButton, INPUT);
+  pinMode(Hijau, OUTPUT);
+  pinMode(LED, OUTPUT);
+  pinMode(Merah, OUTPUT);
+  
+  digitalWrite(Hijau, HIGH);
+  digitalWrite(Merah, HIGH);
+  digitalWrite(LED, HIGH);
+  delay(500);
+  digitalWrite(LED, LOW);
+  delay(500);
+  
 
+//  digitalWrite(Hijau, HIGH);
+//  digitalWrite(Merah, LOW);
+  
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -183,25 +244,63 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    
+    digitalWrite(Merah, LOW);
+    delay(500);
+    digitalWrite(Merah, HIGH);
+    delay(500);
+    digitalWrite(Merah, LOW);
+    delay(500);
+    digitalWrite(Merah, HIGH);
+    delay(500);
+    digitalWrite(Merah, LOW);
+    delay(500);
   }
   Serial.println("");
   Serial.println("WiFi connected");
-
-  startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+  digitalWrite(Hijau, HIGH);
+  delay(500);
+  digitalWrite(Hijau, LOW);
+  delay(500);
+  digitalWrite(Hijau, HIGH);
+  delay(500);
   
+
+//  startCameraServer();
+//
+//  Serial.print("Camera Ready! Use 'http://");
+//  Serial.print(WiFi.localIP());
+//  Serial.println("' to connect");
+
+  client.setServer(mqtt_server,1883);
+  client.setCallback(callback);
 }
 int timeout = 0;
 void loop() {
-  timeout += 1;
-  delay(100);
-  
-  if(timeout % (6 * 10) == 0) { // capture & upload per 1 min
-    capture_ftpupload();
+  if (!client.connected()){
+  reconnect();
   }
+  client.loop();
+//  digitalWrite(Hijau, HIGH);
+//  digitalWrite(Merah, LOW);
+//
+//  if(digitalRead(PushButton)==HIGH)
+//    {
+//      capture_ftpupload();
+//      Serial.println("[INFO] Sukses Upload FTP!");
+//      client.publish(TOPIC_Report, "Sudah Memotret");
+//      Serial.println("Sudah Memotret");
+//      digitalWrite(Hijau, HIGH);
+//      delay(500);
+//      digitalWrite(Hijau, LOW);
+//      delay(500);
+//      digitalWrite(Hijau, HIGH);
+//      }
 
+   timeout += 1;
+   delay(100);  
+   if(timeout % (1 * 10) == 0) { // capture & upload per 1 min
+     capture_ftpupload();
+    }
   
 }
