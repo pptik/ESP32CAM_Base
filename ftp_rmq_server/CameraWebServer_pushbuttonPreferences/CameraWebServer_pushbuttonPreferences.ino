@@ -14,24 +14,26 @@
 
 
 // isi guid disini, guid baru bisa digenerate di guidgenerator.com atau situs guid generator lainnya. 
-const char* guid = "79680d3f-644d-4de1-b0bf-154e7669aa49";
+const char* guid = "camera-788f9935-64cf-e555-b011-06c5393a23b8-CSI2023";
 
-const char* ssid = "ESP32CAM_3D";
-const char* password = "12345678";
+const char* ssid = "SMART_PJU";
+const char* password = "iotworkshop2021";
 
-const char *TOPIC = "pkl_online";  // Topic to sub
-const char *TOPIC_Report = "report_pkl_online";  // Topic to pub
-const char* mqtt_server = "192.168.4.26"; 
-const char* mqtt_user = "/lana:lana";
-const char* mqtt_pass= "lana";
-const char* CL = "kamera_rizki";
+const char *TOPIC = guid;  // Topic to sub
+const char *TOPIC_Report = "camera";  // Topic to pub
+const char* mqtt_server = "rmq2.pptik.id"; 
+const char* mqtt_user = "/smartbell:smartbell";
+const char* mqtt_pass= "kF2jt3xe!";
+const char* CL = "camera_esp";
 
-char ftp_server[] = "192.168.4.5";
-char ftp_user[]   = "iotdevice";
-char ftp_pass[]   = "1234567890";
+char ftp_server[] = "167.205.7.27";
+char ftp_user[]   = "sertifikat";
+char ftp_pass[]   = "s3rt1f1ct12!";
+char ftp_port[]   = "2121";
 
 ESP32_FTPClient ftp (ftp_server,ftp_user,ftp_pass, 5000, 2);
-
+//ESP32_FTPClient ftp(ftp_server, 2121, ftp_user, ftp_pass);
+//ESP32_FTPClient ftp (ftp_server,"2121",ftp_user,ftp_pass);
 
 //void startCameraServer();
 WiFiClient espClient;
@@ -50,9 +52,9 @@ int FTP_uploadImage(int64_t t , unsigned char * pdata, unsigned int size, String
   String nama = namefile;
   Serial.print("FTP_uploadImage=");
   Serial.println(size);
-  char loc[100] = "/iotdevice/lana/test/test_cam";
+  char loc[100] = ".";
   int port = 21;
-  ftp.OpenConnection(port);
+  ftp.OpenConnection();
   bool check = ftp.isConnected();
   Serial.print("cek koneksi: ");
   Serial.println(check);
@@ -100,8 +102,7 @@ int FTP_uploadImage(int64_t t , unsigned char * pdata, unsigned int size, String
 
   ftp.CloseConnection();
   Serial.println("[INFO] Upload Image Success");
-
-  
+  client.publish(TOPIC_Report,filename);
   return 0;
 }
 extern int capture_ftpupload(void);
@@ -121,9 +122,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
   
   if(response == "on")  // Turn the light on
     {
+      digitalWrite(LED, HIGH);
+      delay(500);
+      digitalWrite(LED, LOW);
+      delay(500);
       capture_ftpupload();
       Serial.println("[INFO] Sukses Upload FTP!");
-      client.publish(TOPIC_Report, "Sudah Memotret");
+//      client.publish(TOPIC_Report, "Sudah Memotret");
+//      client.publish(TOPIC_Report,guid);
       Serial.println("Sudah Memotret");
     }
   else{
@@ -213,7 +219,7 @@ void setup() {
     config.fb_count = 2;
   } else {
     config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
+    config.jpeg_quality = 10;
     config.fb_count = 1;
   }
 
@@ -299,8 +305,14 @@ void loop() {
 
    timeout += 1;
    delay(100);  
-   if(timeout % (1 * 10) == 0) { // capture & upload per 1 min
+   if(timeout % (10 * 10) == 0) { // capture & upload per 1 min
+//    digitalWrite(LED, HIGH);
+//    delay(500);
+//    digitalWrite(LED, LOW);
+//    delay(500);
      capture_ftpupload();
+//     const char [100] =guid"#Sudah Memotret";
+//     client.publish(TOPIC_Report,guid);
     }
   
 }
